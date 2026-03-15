@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Animal Sounds</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+      background: linear-gradient(180deg, #87CEEB 0%, #c8f0a0 65%, #8BC34A 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      overflow-x: hidden;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 700px;
+      margin-bottom: 12px;
+    }
+    .back {
+      text-decoration: none;
+      font-size: 1.8rem;
+      background: #fff;
+      border-radius: 50%;
+      width: 52px; height: 52px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+      transition: transform 0.1s;
+    }
+    .back:active { transform: scale(0.9); }
+    h1 {
+      font-size: clamp(1.4rem, 5vw, 2.2rem);
+      color: #fff;
+      text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+      flex: 1;
+      text-align: center;
+    }
+    .spacer { width: 52px; }
+
+    /* speech bubble */
+    #bubble {
+      position: fixed;
+      top: 90px;
+      left: 50%;
+      transform: translateX(-50%) scale(0);
+      background: #fff;
+      border: 4px solid #f4a261;
+      border-radius: 20px;
+      padding: 12px 24px;
+      font-size: clamp(1.4rem, 5vw, 2rem);
+      font-weight: bold;
+      color: #e07b39;
+      z-index: 100;
+      transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    #bubble.show { transform: translateX(-50%) scale(1); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      max-width: 560px;
+      width: 100%;
+      padding-bottom: 20px;
+    }
+    .animal {
+      background: #fff;
+      border-radius: 24px;
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 0 rgba(0,0,0,0.12);
+      transition: transform 0.1s, box-shadow 0.1s;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      overflow: hidden;
+      padding: 8px;
+    }
+    .animal:active { transform: scale(0.92); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
+    .animal-emoji {
+      font-size: clamp(2.8rem, 10vw, 4.5rem);
+      line-height: 1;
+      transition: transform 0.15s;
+    }
+    .animal-name {
+      font-size: clamp(0.7rem, 2.5vw, 1rem);
+      color: #555;
+      margin-top: 4px;
+      font-weight: bold;
+    }
+
+    /* wiggle animation */
+    @keyframes wiggle {
+      0%,100% { transform: rotate(0deg) scale(1); }
+      20%      { transform: rotate(-15deg) scale(1.25); }
+      40%      { transform: rotate(15deg) scale(1.3); }
+      60%      { transform: rotate(-10deg) scale(1.25); }
+      80%      { transform: rotate(8deg) scale(1.2); }
+    }
+    .wiggle { animation: wiggle 0.55s ease; }
+
+    /* sparkles */
+    .sparkle {
+      position: fixed;
+      pointer-events: none;
+      font-size: 1.8rem;
+      z-index: 99;
+      animation: sparkle-fly 0.8s ease-out forwards;
+    }
+    @keyframes sparkle-fly {
+      0%   { opacity: 1; transform: translate(0,0) scale(1); }
+      100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.3); }
+    }
+
+    /* background decorations */
+    .sun { position: fixed; top: 10px; right: 20px; font-size: 3rem; pointer-events: none; animation: spin-slow 20s linear infinite; }
+    @keyframes spin-slow { to { transform: rotate(360deg); } }
+    .cloud { position: fixed; top: 20px; left: 20px; font-size: 2.5rem; pointer-events: none; opacity: 0.7; animation: drift 15s ease-in-out infinite; }
+    @keyframes drift { 0%,100% { transform: translateX(0); } 50% { transform: translateX(18px); } }
+  </style>
+</head>
+<body>
+  <div class="sun">☀️</div>
+  <div class="cloud">☁️</div>
+  <div id="bubble"></div>
+
+  <header>
+    <a href="index.html" class="back">🏠</a>
+    <h1>Animal Sounds 🎵</h1>
+    <div class="spacer"></div>
+  </header>
+
+  <div class="grid" id="grid"></div>
+
+  <script>
+    const animals = [
+      { emoji: '🐄', name: 'Cow',    sound: 'Moooo!' },
+      { emoji: '🐷', name: 'Pig',    sound: 'Oink oink!' },
+      { emoji: '🐔', name: 'Chicken', sound: 'Cluck cluck!' },
+      { emoji: '🐑', name: 'Sheep',  sound: 'Baaaa!' },
+      { emoji: '🐴', name: 'Horse',  sound: 'Neigh!' },
+      { emoji: '🦆', name: 'Duck',   sound: 'Quack quack!' },
+      { emoji: '🐐', name: 'Goat',   sound: 'Mehh!' },
+      { emoji: '🐰', name: 'Bunny',  sound: 'Hop hop!' },
+      { emoji: '🐓', name: 'Rooster', sound: 'Cock-a-doodle!' },
+    ];
+
+    const colors = ['#fff3e0','#e8f5e9','#e3f2fd','#fce4ec','#f3e5f5','#e0f7fa','#fff9c4','#f1f8e9','#ede7f6'];
+
+    const grid = document.getElementById('grid');
+    const bubble = document.getElementById('bubble');
+    let bubbleTimeout;
+
+    animals.forEach((a, i) => {
+      const card = document.createElement('div');
+      card.className = 'animal';
+      card.style.background = colors[i];
+      card.innerHTML = `<div class="animal-emoji">${a.emoji}</div><div class="animal-name">${a.name}</div>`;
+      card.addEventListener('pointerdown', () => tap(card, a));
+      grid.appendChild(card);
+    });
+
+    function tap(card, animal) {
+      const em = card.querySelector('.animal-emoji');
+      em.classList.remove('wiggle');
+      void em.offsetWidth; // reflow
+      em.classList.add('wiggle');
+
+      // speech bubble
+      clearTimeout(bubbleTimeout);
+      bubble.textContent = animal.sound;
+      bubble.classList.add('show');
+      bubbleTimeout = setTimeout(() => bubble.classList.remove('show'), 1800);
+
+      // sparkles
+      const rect = card.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      spawnSparkles(cx, cy);
+
+      // speech synthesis
+      speak(animal.name + ' says ' + animal.sound);
+    }
+
+    function spawnSparkles(cx, cy) {
+      const icons = ['⭐','✨','💛','🌟','💫'];
+      for (let i = 0; i < 6; i++) {
+        const s = document.createElement('div');
+        s.className = 'sparkle';
+        s.textContent = icons[Math.floor(Math.random() * icons.length)];
+        const angle = (Math.PI * 2 / 6) * i + Math.random() * 0.5;
+        const dist = 60 + Math.random() * 60;
+        s.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+        s.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
+        s.style.left = (cx - 14) + 'px';
+        s.style.top  = (cy - 14) + 'px';
+        document.body.appendChild(s);
+        s.addEventListener('animationend', () => s.remove());
+      }
+    }
+
+    function speak(text) {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 0.9;
+      u.pitch = 1.3;
+      window.speechSynthesis.speak(u);
+    }
+  </script>
+</body>
+</html>

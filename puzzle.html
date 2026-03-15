@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Animal Homes</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+      background: linear-gradient(180deg, #87CEEB 0%, #c8f0a0 60%, #8BC34A 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px;
+      overflow-x: hidden;
+      user-select: none;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 600px;
+      margin-bottom: 10px;
+    }
+    .back {
+      text-decoration: none;
+      font-size: 1.8rem;
+      background: #fff;
+      border-radius: 50%;
+      width: 52px; height: 52px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+      flex-shrink: 0;
+    }
+    h1 {
+      font-size: clamp(1.2rem, 5vw, 2rem);
+      color: #fff;
+      text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+      text-align: center;
+      flex: 1;
+    }
+    .spacer { width: 52px; }
+
+    #instruction {
+      background: #fff;
+      border-radius: 16px;
+      padding: 8px 20px;
+      font-size: clamp(0.85rem, 3vw, 1.1rem);
+      color: #555;
+      margin-bottom: 14px;
+      text-align: center;
+      max-width: 580px;
+      width: 100%;
+      box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+    }
+
+    /* Homes row */
+    #homes {
+      display: flex;
+      justify-content: center;
+      gap: clamp(8px, 3vw, 20px);
+      margin-bottom: 20px;
+      max-width: 600px;
+      width: 100%;
+    }
+    .home {
+      flex: 1;
+      max-width: 150px;
+      min-height: 100px;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 4px;
+      border: 4px dashed rgba(255,255,255,0.7);
+      background: rgba(255,255,255,0.35);
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      position: relative;
+      gap: 4px;
+    }
+    .home.highlight {
+      background: rgba(255,255,255,0.65);
+      border-color: #fff;
+      transform: scale(1.05);
+    }
+    .home.correct {
+      border-style: solid;
+      border-color: #66bb6a;
+      background: rgba(200,255,200,0.5);
+    }
+    .home-icon  { font-size: clamp(2rem, 8vw, 3.5rem); line-height: 1; }
+    .home-label { font-size: clamp(0.65rem, 2.5vw, 0.9rem); color: #fff; text-shadow: 1px 1px 0 rgba(0,0,0,0.3); font-weight: bold; text-align: center; }
+    .home-placed { font-size: clamp(1.8rem, 7vw, 3rem); position: absolute; bottom: 8px; opacity: 0; transition: opacity 0.3s; }
+    .home-placed.visible { opacity: 1; }
+
+    /* Animals tray */
+    #tray {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: clamp(10px, 3vw, 16px);
+      max-width: 600px;
+      width: 100%;
+    }
+    .animal-token {
+      width: clamp(72px, 20vw, 100px);
+      height: clamp(72px, 20vw, 100px);
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(2rem, 8vw, 3.2rem);
+      cursor: grab;
+      box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.3s;
+      touch-action: none;
+      border: 3px solid rgba(255,255,255,0.8);
+    }
+    .animal-token.dragging {
+      cursor: grabbing;
+      transform: scale(1.2);
+      box-shadow: 0 14px 20px rgba(0,0,0,0.2);
+      z-index: 1000;
+      position: fixed;
+      opacity: 0.9;
+    }
+    .animal-token.placed {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0);
+    }
+
+    /* wrong shake */
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-12px); }
+      40%     { transform: translateX(12px); }
+      60%     { transform: translateX(-8px); }
+      80%     { transform: translateX(8px); }
+    }
+    .shake { animation: shake 0.4s ease; }
+
+    /* celebration */
+    #celebrate {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(255,255,255,0.93);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+      text-align: center;
+      animation: pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes pop-in { from { transform: scale(0.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    #celebrate .big   { font-size: clamp(4rem, 15vw, 8rem); }
+    #celebrate h2     { font-size: clamp(1.5rem, 6vw, 3rem); color: #f4a261; margin-top: 10px; }
+    #celebrate button {
+      margin-top: 24px;
+      padding: 16px 40px;
+      font-size: 1.4rem;
+      font-family: inherit;
+      background: #f4a261;
+      border: none; border-radius: 50px; color: #fff;
+      cursor: pointer;
+      box-shadow: 0 6px 0 #c07a3a;
+    }
+    #celebrate button:active { transform: translateY(3px); box-shadow: 0 3px 0 #c07a3a; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back">🏠</a>
+  <h1>Animal Homes 🏡</h1>
+  <div class="spacer"></div>
+</header>
+
+<div id="instruction">Help each animal get home! Drag them to the right place.</div>
+
+<div id="homes"></div>
+<div id="tray"></div>
+
+<div id="celebrate" style="display:none">
+  <div class="big">🎉🌟🎉</div>
+  <h2>All animals are home!</h2>
+  <button onclick="startGame()">Play Again!</button>
+</div>
+
+<script>
+  // Three homes, each accepts specific animals
+  const HOMES = [
+    { icon: '🏚️', label: 'The Barn',  color: '#f9a825', accepts: ['🐄','🐴','🐑'] },
+    { icon: '🌊', label: 'The Pond',  color: '#29b6f6', accepts: ['🦆','🐸','🦢'] },
+    { icon: '🌿', label: 'The Field', color: '#66bb6a', accepts: ['🐔','🐓','🐰'] },
+  ];
+
+  // We pick 2 animals per home, show them shuffled in the tray
+  let placed = 0;
+  let total = 0;
+  let dragging = null;
+  let dragOffX = 0, dragOffY = 0;
+
+  function startGame() {
+    placed = 0;
+    document.getElementById('celebrate').style.display = 'none';
+    buildBoard();
+    speak('Help the animals find their home!');
+  }
+
+  function buildBoard() {
+    const homesEl = document.getElementById('homes');
+    const trayEl  = document.getElementById('tray');
+    homesEl.innerHTML = '';
+    trayEl.innerHTML  = '';
+
+    const trayAnimals = []; // { emoji, homeIndex }
+
+    HOMES.forEach((home, hi) => {
+      // pick 2 animals from this home's accepts list
+      const picks = shuffle([...home.accepts]).slice(0, 2);
+      picks.forEach(emoji => trayAnimals.push({ emoji, homeIndex: hi }));
+
+      const el = document.createElement('div');
+      el.className = 'home';
+      el.style.borderColor = home.color + '99';
+      el.dataset.homeIndex = hi;
+      el.innerHTML = `
+        <div class="home-icon">${home.icon}</div>
+        <div class="home-label">${home.label}</div>
+        <div class="home-placed"></div>
+      `;
+      homesEl.appendChild(el);
+    });
+
+    total = trayAnimals.length;
+
+    shuffle(trayAnimals).forEach(({ emoji, homeIndex }) => {
+      const token = document.createElement('div');
+      token.className = 'animal-token';
+      token.textContent = emoji;
+      token.dataset.homeIndex = homeIndex;
+      token.style.background = HOMES[homeIndex].color + '33';
+
+      // pointer drag
+      token.addEventListener('pointerdown', onDragStart);
+      trayEl.appendChild(token);
+    });
+  }
+
+  /* ---- Drag handling ---- */
+  function onDragStart(e) {
+    e.preventDefault();
+    dragging = e.currentTarget;
+    dragging.setPointerCapture(e.pointerId);
+
+    const rect = dragging.getBoundingClientRect();
+    dragOffX = e.clientX - rect.left;
+    dragOffY = e.clientY - rect.top;
+
+    // move to body so it floats freely
+    const clone = dragging.cloneNode(true);
+    clone.classList.add('dragging');
+    clone.style.left = (e.clientX - dragOffX) + 'px';
+    clone.style.top  = (e.clientY - dragOffY) + 'px';
+    clone.style.width  = rect.width + 'px';
+    clone.style.height = rect.height + 'px';
+    document.body.appendChild(clone);
+    dragging._clone = clone;
+    dragging.style.opacity = '0.3';
+
+    document.addEventListener('pointermove', onDragMove);
+    document.addEventListener('pointerup',   onDragEnd);
+  }
+
+  function onDragMove(e) {
+    if (!dragging) return;
+    dragging._clone.style.left = (e.clientX - dragOffX) + 'px';
+    dragging._clone.style.top  = (e.clientY - dragOffY) + 'px';
+
+    // highlight home under pointer
+    document.querySelectorAll('.home').forEach(h => h.classList.remove('highlight'));
+    const homeUnder = homeAtPoint(e.clientX, e.clientY);
+    if (homeUnder) homeUnder.classList.add('highlight');
+  }
+
+  function onDragEnd(e) {
+    document.removeEventListener('pointermove', onDragMove);
+    document.removeEventListener('pointerup',   onDragEnd);
+    document.querySelectorAll('.home').forEach(h => h.classList.remove('highlight'));
+
+    if (!dragging) return;
+    dragging._clone.remove();
+    dragging.style.opacity = '1';
+
+    const homeUnder = homeAtPoint(e.clientX, e.clientY);
+    if (homeUnder) {
+      const tokenHomeIdx = parseInt(dragging.dataset.homeIndex);
+      const dropHomeIdx  = parseInt(homeUnder.dataset.homeIndex);
+
+      if (tokenHomeIdx === dropHomeIdx) {
+        // correct!
+        placed++;
+        dragging.classList.add('placed');
+        homeUnder.classList.add('correct');
+        const placedEl = homeUnder.querySelector('.home-placed');
+        placedEl.textContent = dragging.textContent;
+        placedEl.classList.add('visible');
+        speak('Great job!');
+        spawnStars(e.clientX, e.clientY);
+
+        if (placed === total) {
+          setTimeout(() => {
+            document.getElementById('celebrate').style.display = 'flex';
+            speak('Amazing! All animals are home!');
+          }, 600);
+        }
+      } else {
+        // wrong — shake the token
+        dragging.classList.add('shake');
+        speak('Try again!');
+        dragging.addEventListener('animationend', () => dragging.classList.remove('shake'), { once: true });
+      }
+    }
+
+    dragging = null;
+  }
+
+  function homeAtPoint(x, y) {
+    const homes = document.querySelectorAll('.home');
+    for (const h of homes) {
+      const r = h.getBoundingClientRect();
+      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return h;
+    }
+    return null;
+  }
+
+  /* ---- Helpers ---- */
+  function spawnStars(cx, cy) {
+    for (let i = 0; i < 7; i++) {
+      const s = document.createElement('div');
+      s.style.cssText = `
+        position:fixed; pointer-events:none; font-size:1.8rem; z-index:999;
+        left:${cx - 14}px; top:${cy - 14}px;
+        animation: sparkle-fly 0.75s ease-out forwards;
+      `;
+      const angle = (Math.PI * 2 / 7) * i;
+      const dist = 50 + Math.random() * 50;
+      s.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+      s.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
+      s.textContent = ['⭐','✨','💛','🌟'][Math.floor(Math.random() * 4)];
+      document.body.appendChild(s);
+      s.addEventListener('animationend', () => s.remove());
+    }
+  }
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function speak(text) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.9; u.pitch = 1.3;
+    window.speechSynthesis.speak(u);
+  }
+
+  // inject keyframe used by spawnStars
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes sparkle-fly {
+      0%   { opacity:1; transform: translate(0,0) scale(1); }
+      100% { opacity:0; transform: translate(var(--dx), var(--dy)) scale(0.3); }
+    }
+  `;
+  document.head.appendChild(style);
+
+  startGame();
+</script>
+</body>
+</html>

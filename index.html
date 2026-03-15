@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Farm Games</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+      background: linear-gradient(135deg, #87CEEB 0%, #98FB98 60%, #90EE90 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow: hidden;
+    }
+    h1 {
+      font-size: clamp(2rem, 8vw, 4rem);
+      color: #fff;
+      text-shadow: 3px 3px 0 #f4a261, 5px 5px 0 rgba(0,0,0,0.15);
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .subtitle {
+      font-size: clamp(1rem, 4vw, 1.5rem);
+      color: #fff;
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+      margin-bottom: 40px;
+      text-align: center;
+    }
+    .games {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      justify-content: center;
+      max-width: 900px;
+    }
+    .game-card {
+      background: #fff;
+      border-radius: 30px;
+      padding: 30px 24px 24px;
+      width: clamp(200px, 40vw, 260px);
+      text-align: center;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 8px 0 rgba(0,0,0,0.12);
+      transition: transform 0.12s, box-shadow 0.12s;
+      border: 4px solid transparent;
+      display: block;
+    }
+    .game-card:active {
+      transform: translateY(4px);
+      box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+    }
+    .game-card:hover { transform: translateY(-4px); box-shadow: 0 12px 0 rgba(0,0,0,0.12); }
+    .card-animals { border-color: #f4a261; background: linear-gradient(160deg, #fff8f0, #fff); }
+    .card-bubbles { border-color: #70c1f5; background: linear-gradient(160deg, #f0f9ff, #fff); }
+    .card-puzzle  { border-color: #a8d8a8; background: linear-gradient(160deg, #f0fff0, #fff); }
+    .game-emoji { font-size: 4.5rem; display: block; margin-bottom: 12px; }
+    .game-title {
+      font-size: clamp(1.1rem, 4vw, 1.6rem);
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 6px;
+    }
+    .game-desc {
+      font-size: clamp(0.75rem, 2.5vw, 0.95rem);
+      color: #888;
+      line-height: 1.4;
+    }
+    /* floating decoration */
+    .deco {
+      position: fixed;
+      pointer-events: none;
+      font-size: 2.5rem;
+      animation: float 6s ease-in-out infinite;
+      opacity: 0.55;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0) rotate(-5deg); }
+      50%      { transform: translateY(-18px) rotate(5deg); }
+    }
+    .sun { top: 12px; right: 18px; font-size: 3.5rem; animation-duration: 8s; }
+    .cloud1 { top: 30px; left: 20px; animation-duration: 10s; }
+    .cloud2 { top: 80px; right: 120px; animation-duration: 7s; animation-delay: -3s; }
+    .grass { bottom: 10px; left: 12px; animation-duration: 5s; }
+    .flower { bottom: 20px; right: 20px; animation-duration: 6s; animation-delay: -2s; }
+  </style>
+</head>
+<body>
+  <div class="deco sun">☀️</div>
+  <div class="deco cloud1">☁️</div>
+  <div class="deco cloud2">⛅</div>
+  <div class="deco grass">🌿</div>
+  <div class="deco flower">🌻</div>
+
+  <h1>🐄 Farm Games 🐔</h1>
+  <p class="subtitle">Pick a game to play!</p>
+
+  <div class="games">
+    <a href="animals.html" class="game-card card-animals">
+      <span class="game-emoji">🐄🐷🐔</span>
+      <div class="game-title">Animal Sounds</div>
+      <div class="game-desc">Tap the animals and see what happens!</div>
+    </a>
+    <a href="bubbles.html" class="game-card card-bubbles">
+      <span class="game-emoji">🫧🐑🫧</span>
+      <div class="game-title">Pop the Bubbles</div>
+      <div class="game-desc">Pop all the bouncy animal bubbles!</div>
+    </a>
+    <a href="puzzle.html" class="game-card card-puzzle">
+      <span class="game-emoji">🏠🐴🌾</span>
+      <div class="game-title">Animal Homes</div>
+      <div class="game-desc">Help each animal find its home!</div>
+    </a>
+  </div>
+</body>
+</html>
